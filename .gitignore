@@ -1,0 +1,69 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+/__pycache__/
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+bin/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Interpreter private files
+# .stack-work/
+
+# Compiled source
+*.cyc
+*.pyc
+*.pyd
+*.whl
+
+# pytest cache
+.pytest_cache/
+
+# Coverage reporting
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Editors
+.vscode/        # Visual Studio Code
+.idea/          # JetBrains IDEs (e.g., PyCharm)
+*.swp           # Vim
+
+# OS-specific files
+.DS_Store       # macOS
+Thumbs.db       # Windows
+
+# Secrets/Credentials (add your specific file names here)
+secrets.toml
+debug.log
