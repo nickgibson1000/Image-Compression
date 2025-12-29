@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.typing import NDArray
 
 
 """
@@ -62,7 +63,24 @@ def svd(image_matrix_greyscale):
     return svd
 
 
-def calc_eigenvalues():
+def calc_eigenvalues() -> None:
+    pass
 
 
-    print()
+
+"""
+    Calculates the Frobenius Error between our intial image and our new 
+    reconstructed matrix using singular values
+
+    Args:
+        image_matrix_greyscale (NPArray[uint8]): Original image matrix in greyscale
+        k (int): Value determining how many singular values get used during compression
+
+    Returns:
+        ?(tuple?): The completed singular value decomposition matricies
+"""
+def frobenius_error(sigma: NDArray[np.uint8], k: int) -> float:
+    
+    tail = sigma[k:]
+    return float(np.sqrt(np.sum(tail ** 2)))
+

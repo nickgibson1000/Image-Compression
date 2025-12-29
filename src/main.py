@@ -9,6 +9,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-ip", "--imagePath", type=str, nargs='?', const='', help='Path to image to be compressed')
+    parser.add_argument("-k", "--rank", type=int, help='Number of singular values to use in compression')
 
     args = parser.parse_args()
 
@@ -17,10 +18,12 @@ def main() -> None:
     matrix = compress.convert_to_greyscale(imread(args.imagePath))
     
     svd = linalg.svd(matrix)
-    A = compress.compress(20, svd)
+    print(f"Frobenius Error between A and A_k: {linalg.frobenius_error(svd[1], args.rank)}")
 
-    print("Original:", matrix.shape)
-    print("Reconstructed:", A.shape)
+    A = compress.compress(args.rank, svd)
+
+    #print("Original:", matrix.shape)
+    #print("Reconstructed:", A.shape)
 
     # Store off the orirignal and reconstructed arrays
     array_save_directory = "../bin/npz"
