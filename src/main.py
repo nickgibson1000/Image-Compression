@@ -20,7 +20,7 @@ def main() -> None:
     svd = linalg.svd(matrix)
     print(f"Frobenius Error between A and A_k: {linalg.frobenius_error(svd[1], args.rank)}")
 
-    A = compress.compress(args.rank, svd)
+    A = compress.compress(args.rank, svd, matrix)
 
     #print("Original:", matrix.shape)
     #print("Reconstructed:", A.shape)
@@ -30,6 +30,16 @@ def main() -> None:
     np.savez(array_save_directory, "original_greyscale.npz", matrix)
     np.savez(array_save_directory, "compressed_greyscale.npz", A)
 
+    m, n = matrix.shape
+    k = 20
+
+    raw_cost = m * n
+    svd_cost = m*k + n*k + k
+
+    print("Raw entries:", raw_cost)
+    print("SVD entries:", svd_cost)
+
+    print(f"Compression ratio: {raw_cost/svd_cost}")
 
 
 if __name__ == "__main__":

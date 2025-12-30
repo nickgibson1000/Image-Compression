@@ -15,6 +15,7 @@ import numpy.testing as npt
 from numpy.typing import NDArray
 import numpy as np
 
+import encoder
 
 """
     Prints the original images size in number of bytes
@@ -108,8 +109,8 @@ def convert_to_greyscale(image: NDArray[np.uint8]) -> NDArray[np.uint8]:
 
 
 
-
-def compress(k: int, svd: tuple) -> NDArray[np.float64]:
+# MAKE SURE MATRIX IS UINT8
+def compress(k: int, svd: tuple, matrix: NDArray[np.uint8]) -> NDArray[np.float64]:
     U, sigma, VT = svd    
 
     U_k  = U[:, :k]
@@ -126,5 +127,12 @@ def compress(k: int, svd: tuple) -> NDArray[np.float64]:
 
     size = os.path.getsize(out_path)
     print(f"Compressed image size: {size} bytes")
+
+
+
+    out_path = "../bin/metadata.lrk"
+    H, W = matrix.shape
+    metadata = (U_k, Sigma_k, VT_k, H, W, A_k.dtype)
+    encoder.write_output(metadata)
 
     return A_k
