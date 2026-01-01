@@ -1,3 +1,5 @@
 numpy
 matplotlib
 scikit-image
+rawpy
+imageio.v3

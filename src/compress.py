@@ -10,12 +10,18 @@ import matplotlib.pyplot as plt
 import math
 import linalg
 
-
 import numpy.testing as npt
 from numpy.typing import NDArray
 import numpy as np
 
 import encoder
+
+import rawpy
+import imageio.v3 as iio
+
+from pathlib import Path
+
+import re
 
 """
     Prints the original images size in number of bytes
@@ -26,7 +32,7 @@ import encoder
     Returns:
         None
 """
-def print_image_size(image_file_path: str) -> None:
+def get_image_metadata(image_file_path: str) -> None:
 
     if not image_file_path:
         print("No image path provided.")
@@ -51,8 +57,9 @@ def print_image_size(image_file_path: str) -> None:
     Returns:
         NDArray[uint8]: The original 3d image tensor converted to greyscale
 """
-def convert_to_greyscale(image: NDArray[np.uint8]) -> NDArray[np.uint8]:
+def convert_to_greyscale(image_name: str, image: NDArray[np.uint8], image_file_path: str) -> NDArray[np.uint8]:
 
+    image = image_to_array(image_file_path)
 
     image_matrix = np.asarray(image)
     image_matrix_greyscale = image_matrix.astype(np.float64)
@@ -91,26 +98,31 @@ def convert_to_greyscale(image: NDArray[np.uint8]) -> NDArray[np.uint8]:
             new_matrix[row, element] = image_matrix_greyscale[row, element, 0]
 
     image_output_directory = "../bin"
-    output_path = os.path.join(image_output_directory, "greyscale_img.jpg")
+    output_path = os.path.join(image_output_directory, f"{image_name}_greyscale.jpg")
 
     plt.imsave(output_path, new_matrix, cmap="gray")
-
-    #print(new_matrix.min(), new_matrix.max(), new_matrix.dtype)
-    #print(image_matrix_greyscale.min(), image_matrix_greyscale.max(), image_matrix_greyscale.dtype)
-    #print(image_matrix.min(), image_matrix.max(), image_matrix.dtype)
-
-    #print(np.allclose(new_matrix, new_matrix.T))
-    #print(f"Regular: {new_matrix.shape}")
-    #print(f"Transpose: {new_matrix.T.shape}")
-
-    #print(new_matrix.dtype)
 
     return new_matrix
 
 
+def image_to_array(image_file_path: str) -> NDArray[np.uint8]:
+    
+    p = Path(image_file_path)
+    extension = p.suffix
+
+    # Raw format
+    if extension in ('.tiff', '.RAF', '.CR2', '.CR3', '.NEF', '.NRW', '.ORF', '.RW2'):
+        with rawpy.imread(image_file_path) as raw:
+            rgb = raw.postprocess()
+            return rgb.astype(np.float32)
+
+    elif extension in ('.jpg', '.jpeg', '.png', '.GIF', '.webp', '.bmp'):
+        return imread(image_file_path)
+
+
 
 # MAKE SURE MATRIX IS UINT8
-def compress(k: int, svd: tuple, matrix: NDArray[np.uint8]) -> NDArray[np.float64]:
+def compress(image_name: str, k: int, svd: tuple, matrix: NDArray[np.uint8]) -> NDArray[np.float64]:
     U, sigma, VT = svd    
 
     U_k  = U[:, :k]
@@ -120,9 +132,10 @@ def compress(k: int, svd: tuple, matrix: NDArray[np.uint8]) -> NDArray[np.float6
 
     A_k = U_k @ Sigma_k @ VT_k
     A_k = np.clip(A_k, 0, 255)
+    A_k = A_k.astype(np.uint8)
 
     out_dir = "../bin"
-    out_path = os.path.join(out_dir, f"compressed_k{k}.jpg")
+    out_path = os.path.join(out_dir, f"{image_name}_compressedk{k}.jpg")
     plt.imsave(out_path, A_k, cmap="gray")
 
     size = os.path.getsize(out_path)
@@ -130,9 +143,48 @@ def compress(k: int, svd: tuple, matrix: NDArray[np.uint8]) -> NDArray[np.float6
 
 
 
-    out_path = "../bin/metadata.lrk"
     H, W = matrix.shape
     metadata = (U_k, Sigma_k, VT_k, H, W, A_k.dtype)
-    encoder.write_output(metadata)
+    encoder.write_output(image_name, metadata)
 
     return A_k
+
+
+
+"""
+    Calucaltes Costs
+
+    Args:
+        k      (int):
+        height (int):
+        width  (int):
+
+    Returns:
+        None
+"""
+def calculate_costs(k: int, height: int, width: int) -> None:
+
+    raw_cost = height * width
+    svd_cost = height*k + width*k + k
+
+    print("Raw entries:", raw_cost)
+    print("SVD entries:", svd_cost)
+
+    print(f"Compression ratio: {raw_cost/svd_cost}")
+
+
+
+"""
+    Parses a image file path to extract the image name and extension(file type)
+
+    Args:
+        image_file_path (str): Path to image
+
+    Returns:
+        tuple(str,str): A tuple containing first the image name, then second the extension 
+"""
+def parse_image_path(image_file_path: str) -> tuple[str, str]:
+
+    filename = os.path.basename(image_file_path)
+    name, extension = os.path.splitext(filename)         
+    return name, extension

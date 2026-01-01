@@ -1,4 +1,4 @@
-
+import struct
 import numpy as np
 
 """
@@ -10,27 +10,28 @@ import numpy as np
     Returns:
         None
 """
-def write_output(metadata: tuple, image_name: str) -> None:
+def write_output(image_name: str, metadata: tuple) -> None:
 
     out_path = f"../bin/{image_name}_compressed.rnk"
 
     U_k, Sigma_k, VT_k, Height, Width, A_kDataType = metadata
 
     with open(out_path, 'wb') as f:
-        # Turn all the data into utf-8
+        # Turn all the data into utf-8?
+
+        write_matrix(U_k, f)
+        write_matrix(Sigma_k, f)
+        write_matrix(VT_k, f)
 
 
 
-
-
+def write_matrix(matrix, file_handle):
     
+    flat = matrix.flatten()
+    
+    # Header
+    file_handle.write(struct.pack('<ii', matrix.shape[0], matrix.shape[1]))
+    
+    # Data
+    file_handle.write(struct.pack('<' + 'f'*len(flat), *flat))
 
-
-
-'''
-Complete writing to output file and finish all encodings
-Write decoder
-Update github with lots of info
-
-
-'''
